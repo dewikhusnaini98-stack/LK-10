@@ -6,40 +6,34 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| LOGIN PAGE (UI)
+| Authentication Routes
 |--------------------------------------------------------------------------
-| Ini halaman awal yang dilihat user
 */
-Route::get('/', function () {
-    return view('login'); 
-})->name('login.page');
 
-/*
-|--------------------------------------------------------------------------
-| WORKOS AUTH
-|--------------------------------------------------------------------------
-*/
-Route::get('/login', [AuthController::class, 'login'])->name('login');
+// Redirect root to login page
+Route::get('/', function () {
+    return redirect()->route('login');
+});
+
+// Render the login view
+Route::get('/login', function () {
+    return view('login');
+})->name('login');
+
+// Initiate WorkOS OAuth redirect
+Route::get('/login/workos', [AuthController::class, 'login'])->name('login.workos');
+
+// Callback endpoint for WorkOS OAuth
 Route::get('/auth/callback', [AuthController::class, 'callback'])->name('auth.callback');
+
+// Handle user logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 /*
 |--------------------------------------------------------------------------
-| PROTECTED ROUTES (WAJIB LOGIN)
+| Protected Routes (Authenticated Users Only)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-    Route::resource('books', BookController::class);
+    Route::resource('books', BookController::class)->except(['show']);
 });
-
-Route::get('/login', function () {
-    return view('login');
-})->name('login.page');
-
-Route::get('/login/workos', [AuthController::class, 'login'])
-    ->name('login.workos');
-
-Route::post('/logout', function () {
-    Auth::logout();
-    return redirect('/login');
-})->name('logout');

@@ -21,8 +21,8 @@ class AuthController extends Controller
             return redirect()->route('books.index');
         }
 
-        $clientId = env('WORKOS_CLIENT_ID');
-        $redirectUri = env('WORKOS_REDIRECT_URI');
+        $clientId = config('services.workos.client_id');
+        $redirectUri = config('services.workos.redirect_uri');
 
         $query = http_build_query([
             'client_id'     => $clientId,
@@ -50,8 +50,8 @@ class AuthController extends Controller
         $response = Http::post(
             'https://api.workos.com/user_management/authenticate',
             [
-                'client_id'     => env('WORKOS_CLIENT_ID'),
-                'client_secret' => env('WORKOS_API_KEY'),
+                'client_id'     => config('services.workos.client_id'),
+                'client_secret' => config('services.workos.api_key'),
                 'code'          => $code,
                 'grant_type'    => 'authorization_code',
             ]

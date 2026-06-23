@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BookRequest;
 use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -29,29 +30,13 @@ class BookController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(BookRequest $request)
     {
-        $request->validate([
-            'title' => 'required|max:255',
-            'author' => 'required|max:255',
-            'publisher' => 'required|max:255',
-            'year' => 'required|numeric',
-            'category' => 'required|max:255',
-            'description' => 'required',
-            'cover' => 'required|image|mimes:jpg,jpeg,png|max:2048'
-        ]);
+        $validated = $request->validated();
 
-        $cover = $request->file('cover')->store('covers', 'public');
+        $validated['cover'] = $request->file('cover')->store('covers', 'public');
 
-        Book::create([
-            'title' => $request->title,
-            'author' => $request->author,
-            'publisher' => $request->publisher,
-            'year' => $request->year,
-            'category' => $request->category,
-            'description' => $request->description,
-            'cover' => $cover
-        ]);
+        Book::create($validated);
 
         return redirect()->route('books.index')
             ->with('success', 'Data buku berhasil ditambahkan');
@@ -68,37 +53,16 @@ class BookController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Book $book)
+    public function update(BookRequest $request, Book $book)
     {
-        $request->validate([
-            'title' => 'required|max:255',
-            'author' => 'required|max:255',
-            'publisher' => 'required|max:255',
-            'year' => 'required|numeric',
-            'category' => 'required|max:255',
-            'description' => 'required',
-            'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
-        ]);
+        $validated = $request->validated();
 
         if ($request->hasFile('cover')) {
-
             Storage::disk('public')->delete($book->cover);
-
-            $cover = $request->file('cover')->store('covers', 'public');
-
-        } else {
-            $cover = $book->cover;
+            $validated['cover'] = $request->file('cover')->store('covers', 'public');
         }
 
-        $book->update([
-            'title' => $request->title,
-            'author' => $request->author,
-            'publisher' => $request->publisher,
-            'year' => $request->year,
-            'category' => $request->category,
-            'description' => $request->description,
-            'cover' => $cover
-        ]);
+        $book->update($validated);
 
         return redirect()->route('books.index')
             ->with('success', 'Data buku berhasil diupdate');
